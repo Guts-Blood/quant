@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "created_on": "2026-11-24",
+  "status": "research_protocol",
+  "mode": "observe",
+  "purpose": "建立可按历史时点复算的市场风险与股价隐含预期指标；检验价值加低波在50万元以内的稳健性。",
+  "capital_experiment": {
+    "capital_cny": [
+      100000,
+      300000,
+      500000
+    ],
+    "baseline": "value_lowvol_blend",
+    "max_holdings": 10,
+    "comparisons": [
+      "baseline",
+      "capacity_constraints_only",
+      "profitability_quality_only_if_point_in_time_data_available",
+      "capacity_plus_quality_only_if_point_in_time_data_available"
+    ],
+    "later_risk_experiment": "Freeze the baseline first; separately test local implied-volatility overlays. Report exposure-matched results.",
+    "metrics": [
+      "net_return",
+      "max_drawdown",
+      "average_equity_exposure",
+      "order_notional_completion",
+      "volume_rejections",
+      "turnover",
+      "holding_overlap_vs_100k",
+      "estimated_exit_days"
+    ],
+    "constraints": [
+      "Preserve existing backtest outputs.",
+      "Do not increase participation assumptions to make scaling appear successful.",
+      "Use the same data cutoff and execution model across capital levels.",
+      "Complete missing-year replay and align historical execution methods before claiming five-year robustness."
+    ]
+  },
+  "shared_contract": {
+    "required_provenance": [
+      "asof",
+      "source_effective_at",
+      "published_at_if_applicable",
+      "observed_at",
+      "available_at",
+      "source_id",
+      "source_hash",
+      "method_version",
+      "assumptions",
+      "quality_flags"
+    ],
+    "point_in_time_rule": "An input is usable only when its available_at is no later than the decision cutoff. Preserve financial-statement revisions; never backdate newly collected material.",
+    "classifications": [
+      "observed_input",
+      "assumption",
+      "derived_estimate"
+    ],
+    "missing_data": "Return unavailable with reason; never silently substitute zero, current data, or future revisions.",
+    "output_is_trading_instruction": false
+  },
+  "local_implied_volatility": {
+    "purpose": "Market risk state and candidate portfolio exposure overlay; does not predict return direction.",
+    "underlying": null,
+    "underlying_selection": "Audit broad-market ETF/index option-chain history; prefer alignment with the current CSI500-based stock pool. Record basis risk explicitly.",
+    "identity": "Local research IV30; do not label as the official Cboe VIX or an official Chinese index.",
+    "required_inputs": [
+      "option_bid",
+      "option_ask",
+      "strike",
+      "call_put",
+      "expiry_timestamp",
+      "quote_timestamp",
+      "underlying_id",
+      "contract_multiplier_and_adjustment_status",
+      "risk_free_curve"
+    ],
+    "method": "Use a documented option-strip variance method per expiry, then interpolate total variance between eligible expiries bracketing 30 calendar days; annualize consistently and take the square root.",
+    "calendar_basis": "Record calendar, exact settlement timestamps, timezone and annualization convention; do not copy US expiry-selection rules without adapting them.",
+    "quality_checks": [
+      "Synchronize quotes and reject stale/crossed/invalid quotes.",
+      "Handle zero bids and option-wing truncation with a versioned rule.",
+      "Require sufficient strike coverage and two eligible maturities bracketing the target; no silent extrapolation.",
+      "Exclude or normalize adjusted contracts consistently.",
+      "Persist all excluded contracts and reasons."
+    ],
+    "outputs": [
+      "iv30_annualized_decimal",
+      "trailing_percentile_using_prior_observations",
+      "quote_age",
+      "expiry_pair",
+      "strike_coverage",
+      "quality_flags"
+    ],
+    "realized_volatility_fallback": "Keep realized volatility as a separately named feature; it is not VIX and cannot replace missing historical option chains.",
+    "us_vix": "Optional external risk input; use only the US observation actually available at the China decision cutoff."
+  },
+  "reverse_dcf": {
+    "purpose": "Estimate the operating expectations implied by market price under explicit assumptions; not a unique observable market forecast.",
+    "initial_scope": "Nonfinancial companies with interpretable operating cash flows; route financial firms and unsuitable negative/unstable cash-flow cases to separate models.",
+    "solve_for": "One variable at a time, initially revenue CAGR.",
+    "required_inputs": [
+      "market_cap_and_share_count_asof",
+      "debt_cash_and_nonoperating_asset_bridge",
+      "minority_interests_if_applicable",
+      "point_in_time_revenue_and_operating_profit",
+      "tax_rate_assumption",
+      "operating_margin_path_assumption",
+      "reinvestment_assumption",
+      "discount_rate_assumption",
+      "explicit_forecast_horizon",
+      "terminal_growth_and_return_on_capital_assumptions"
+    ],
+    "valuation_identity": "Operating enterprise value equals discounted FCFF over the explicit horizon plus discounted terminal value; reconcile consistently to equity value.",
+    "reinvestment_rule": "Growth must be paired with reinvestment assumptions; do not assume incremental revenue is free cash flow.",
+    "solver_rules": [
+      "Fix remaining assumptions before solving.",
+      "Record search bounds, residual and convergence.",
+      "Return no_solution or multiple_solutions when appropriate.",
+      "Require terminal discount rate above terminal growth in a perpetual-growth terminal model."
+    ],
+    "outputs": [
+      "implied_revenue_growth",
+      "assumption_sensitivity_range",
+      "terminal_value_share",
+      "valuation_bridge",
+      "solver_status",
+      "quality_flags"
+    ],
+    "interpretation": "Compare implied requirements with independently evidenced business scenarios; low implied growth alone is not a buy signal."
+  },
+  "acceptance_checks": [
+    "Known DCF inputs -> synthetic price -> recover the same unique input within tolerance.",
+    "Reject invalid terminal assumptions and report unsolved/multiple-root cases.",
+    "Verify volatility interpolation, units, stale quotes and missing maturity handling with independent fixtures.",
+    "Truncating data at a historical cutoff must not change any earlier output.",
+    "Run fee and liquidity stress tests and report risk/exposure changes, not only return.",
+    "Keep hypotheses frozen before new validation; do not describe already-inspected years as untouched holdouts."
+  ],
+  "references": [
+    {
+      "title": "Cboe VIX FAQ",
+      "url": "https://www.cboe.com/tradable-products/vix/faqs",
+      "role": "Definition, option quote inputs and constant-maturity concept; local implementation still requires a versioned full methodology."
+    },
+    {
+      "title": "Aswath Damodaran — Valuation: Closing Thoughts",
+      "url": "https://pages.stern.nyu.edu/~adamodar/pdfiles/eqnotes/valclose09.pdf",
+      "role": "FCFF, discount-rate consistency, reinvestment, terminal value and firm-to-equity bridge."
+    }
+  ]
+}

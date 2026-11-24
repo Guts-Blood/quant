@@ -1,0 +1,60 @@
+schema_version = 1
+name = "synthetic-reversal"
+output_dir = "../outputs"
+
+[data]
+panel = "../tests/fixtures/synthetic/panel.csv"
+calendar = "../tests/fixtures/synthetic/calendar.csv"
+source_id = "synthetic-demo-seed-1729"
+availability_mode = "public"
+signal_time = "16:00"
+
+[universe]
+mode = "supplied_panel"
+min_history = 5
+liquidity_window = 3
+min_amount = 0
+
+[[factors]]
+name = "reversal"
+[factors.parameters]
+window = 5
+
+[[transforms]]
+name = "standardize"
+
+[labels]
+price_column = "adj_open"
+horizons = [1, 3]
+entry_lag = 1
+
+[evaluation]
+min_observations = 4
+quantiles = 2
+
+[portfolio]
+factor = "reversal"
+top_n = 3
+cash_buffer = 0.05
+
+[backtest]
+initial_cash = 100000
+rebalance_every = 3
+
+[[splits]]
+name = "train"
+role = "train"
+start = "2023-01-16"
+end = "2023-01-27"
+
+[[splits]]
+name = "validation"
+role = "validation"
+start = "2023-01-30"
+end = "2023-02-08"
+
+[[splits]]
+name = "test"
+role = "test"
+start = "2023-02-09"
+end = "2023-02-20"
