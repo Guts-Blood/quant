@@ -1,0 +1,96 @@
+{
+  "snapshot": "2026-11-19",
+  "archived_on": "2026-11-25",
+  "files": [
+    {
+      "name": "calendar.txt",
+      "bytes": 70312,
+      "sha256": "694c3fde7447156835f47ff94ec0a37f30f592d373d9085a8a749382fc7dbeb6",
+      "source": "https://huggingface.co/datasets/OpenFinMind/stock_dataset/resolve/51f2e1ea9c53fa9a8c47412724ff18559440521d/qlib/cn_data/calendars/day.txt",
+      "drive_parts": [
+        "2026-11-19_calendar.txt"
+      ]
+    },
+    {
+      "name": "csi500.tsv",
+      "bytes": 682000,
+      "sha256": "d4d3449512a1011e3c4ebd16b33bb2418c54180ded8049f53342089ff32031cf",
+      "source": "https://huggingface.co/datasets/OpenFinMind/stock_dataset/resolve/51f2e1ea9c53fa9a8c47412724ff18559440521d/qlib/cn_data/instruments/csi500.txt",
+      "drive_parts": [
+        "2026-11-19_csi500.tsv"
+      ]
+    },
+    {
+      "name": "daily.parquet",
+      "bytes": 126093859,
+      "sha256": "378659a9c0522f26c4872d4171e4a458b561ca09f29e69d3a55380a4bfd04a3e",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/daily.parquet",
+      "drive_parts": [
+        "2026-11-19_daily.parquet.part1",
+        "2026-11-19_daily.parquet.part2"
+      ]
+    },
+    {
+      "name": "dividends.parquet",
+      "bytes": 235887,
+      "sha256": "19122560a1311be4641cce038a9582903d8b6dce906e29e6992a74aeca81f8bb",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/dividends.parquet",
+      "drive_parts": [
+        "dividends.parquet"
+      ]
+    },
+    {
+      "name": "fundamentals.parquet",
+      "bytes": 9603730,
+      "sha256": "fb9ed6ec048047278fcf5d4beadd722ded3c945612e354fd5adc7ee17b611e29",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/fundamentals.parquet",
+      "drive_parts": [
+        "2026-11-19_fundamentals.parquet"
+      ]
+    },
+    {
+      "name": "observations-20261125.zip",
+      "bytes": 120941,
+      "sha256": "56fc050900904f499c26b58bb6529ab61a33b79e35644e84a4068645a7e9ad06",
+      "source": null,
+      "drive_parts": [
+        "observations-20261125.zip"
+      ]
+    },
+    {
+      "name": "source-README.md",
+      "bytes": 2956,
+      "sha256": "2152973cd97d9cd8747cdfd5e85e3953cdb3dbffc47092910f8c7e12fec7a656",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/README.md",
+      "drive_parts": [
+        "source-README.md"
+      ]
+    },
+    {
+      "name": "upstream-manifest.json",
+      "bytes": 1462,
+      "sha256": "d3120f630d0cd340f4a802dc16a7de4da0e0f3f75e0b5256220055c74f926d67",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/manifest.json",
+      "drive_parts": [
+        "upstream-manifest.json"
+      ]
+    },
+    {
+      "name": "valuation.parquet",
+      "bytes": 157915197,
+      "sha256": "a2853530573d8de5529308e40ce7528e093b77656fdf1991acf1721d0fc46b90",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/valuation.parquet",
+      "drive_parts": [
+        "2026-11-19_valuation.parquet.part1",
+        "2026-11-19_valuation.parquet.part2"
+      ]
+    }
+  ],
+  "scope": {
+    "daily_and_valuation": "2021-05-17..2026-11-19; unadjusted daily bars; third-party archive",
+    "fundamentals": "2021Q1..2026Q1; publication dates, no statement revision history",
+    "membership_calendar_last_date": "2026-05-25",
+    "options": "One intraday capture on 2026-11-25, 510500; flat rate assumption 2%",
+    "dividends_last_announcement": "2026-05-16"
+  }
+}

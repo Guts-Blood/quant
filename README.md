@@ -35,3 +35,5 @@ python -m venv .venv
 维护新因子时，在 `factors/` 写纯函数，在 `CATALOG` 登记输入列和研究假设，再用配置选择窗口和组合规则。数据时间约定、财报修订接口及实验产物说明见[研究指南](docs/RESEARCH.md)。原有两个盘中窗口的示例见[窗口回放说明](docs/BACKTEST.md)。
 
 完整离线检查可运行 `python -m unittest discover -s tests -v`。若要生成较长的虚构样本与一套可修改的 JSON 配置，执行 `python -m factorlab demo --out outputs/demo-new`，使用尚未存在的目录。
+
+真实行情快照的恢复、DuckDB 查询库及交易回放验收见[回测数据说明](docs/MARKET_DATA.md)。
