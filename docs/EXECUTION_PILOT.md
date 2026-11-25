@@ -20,7 +20,7 @@
 
 沿用 15:01 上海时间、2% 连续复利年利率、最长 300 秒报价年龄。固定日与盘中原始批次分别重算。2026-11-25 固定批次实收 124/124 份，52 份通过正双边过滤。12 月到期看跌/看涨两翼为 3/7 档，次年 3 月为 1/10 档。远月有效看跌档数低于 3，IV30 缺值。该次固定采集有两批原始尝试。历史 19 日窗口内，有效信号、触发和共同可调仓日均为 0。新采集入口使用 XSHG 交易日历，等待 15:01 后请求行情，启动晚于观察点 60 秒记漏采，每次不可用最多再试一批。程序为每批生成 ZIP 和 SHA-256，回执保留实际可用时间及按到期日划分的两翼。工作流在北京时间 14:35 请求 runner，GitHub 的排队延迟会记入回执。固定观察由默认分支上的工作流启动。当前锁定交易日历截至 2026-12-31，越界时报错。[采集入口](../experiments/scheduled_options.py) · [工作流](../.github/workflows/capture-510500.yml)
 
-`statement_facts` 提供净利润、经营现金流、总资产及 DCF 桥接所需的报表项目。每行记录公告、时间精度、保守可用时间、实际采集时间、修订、单位、期间口径和原报表行。仅知公告日期时，次日上海时间 00:00 生效。字段后缀区分瞬时、单季、年内累计和 TTM；本批原始流量以单季及累计披露入库。环比、TTM 和盈利质量的全池覆盖仍待扩充。贵州茅台 2022 年合并净利润在两次年度披露中的版本为 65,375,136,766.75 元与 65,376,039,957.88 元。这里追踪已收集的披露版本；中间公告需逐份补齐。[原始财报行与文档定位](../configs/market-data/pilot-disclosures.json)
+`statement_facts` 提供净利润、经营现金流、总资产及 DCF 桥接所需的报表项目。每行记录公告、时间精度、保守可用时间、实际采集时间、修订、单位、期间口径和原报表行。仅知公告日期时，次日上海时间 00:00 生效。字段后缀区分瞬时、单季、年内累计和 TTM；本批原始流量以单季及累计披露入库。同一截止时点可从累计数推导单季和过去四季，每项结果保留带正负号的原始期间及修订号。缺期时保留缺值，全池盈利质量覆盖仍待扩充。贵州茅台 2022 年合并净利润在两次年度披露中的版本为 65,375,136,766.75 元与 65,376,039,957.88 元。这里追踪已收集的披露版本；中间公告需逐份补齐。[原始财报行与文档定位](../configs/market-data/pilot-disclosures.json)
 
 反向 DCF 针对 2023-12-08 冻结名单里的隧道股份，股价 5.40 元乘股本核对至 169.78 亿元市值。按已披露借款、债券、租赁、现金等价物、少数股东权益及单列投资，桥接至经营企业价值 343.76 亿元。9 个月收入年化，5 年核心经营利润率取同期口径。贴现率等假设是回溯敏感性分析的设定。求解器在 −50% 至 +100% 的增长搜索区间内未找到变号根。+3% 与 −3% 收入增长情景分别得到 196.73 亿元和 212.43 亿元。后者较高与增长需要再投资、收缩时模型不释放资本有关。这里覆盖 12 家候选公司中的 1 家、190 条公司/信号日中的 1 条。[情景和估算依据](../configs/market-data/pilot-dcf.json) · [三季报](https://static.cninfo.com.cn/finalpage/2023-10-28/1218181863.PDF)
 
@@ -41,6 +41,7 @@ python -m experiments.market_research compare "$snap" --start 2023-12-11 --end 2
 python -m experiments.market_version audit-options "$snap"
 python -m experiments.market_statements asof "$snap" 600519 '2023-04-03T16:00:00+08:00' --mode public
 python -m experiments.market_statements asof "$snap" 600519 '2024-04-08T16:00:00+08:00' --mode public
+python -m experiments.market_statements asof "$snap" 600519 '2024-04-08T16:00:00+08:00' --mode public --flows
 python -m experiments.pilot_dcf "$snap" outputs/pilot-baseline outputs/pilot-dcf.json
 ```
 
@@ -52,3 +53,5 @@ python -m experiments.execution_window datasets/market/2026-11-25-v1 \
   --collected-at '2026-11-25T17:39:22+08:00'
 cmp "configs/market-data/$v.json" "datasets/rebuilt/$v/manifest.json"
 ```
+
+发布时在独立目录回读了全部数据，另从三个固定 Git 来源重新构建出同一份清单。清单 SHA-256 为 `5aa5ebf185073c0f5dfc29e091adeead00dad08837de919acfe32988b3932811`。执行样例、固定与盘中期权审计、财报修订截面和候选 DCF 附注打包归档。[验收样例回执](https://drive.google.com/file/d/1Nfe0BwItxVYSfvbqpp-rFGBVzMZ3BPfv/view)

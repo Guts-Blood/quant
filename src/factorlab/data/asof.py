@@ -86,3 +86,43 @@ def latest_fundamentals(records: pd.DataFrame, cutoff, *, mode: str) -> pd.DataF
     return selected.sort_values(["symbol", "field", "period_end"], kind="stable").groupby(
         ["symbol", "field"], sort=False
     ).tail(1).reset_index(drop=True)
+
+
+def flow_periods(records: pd.DataFrame, cutoff, *, mode: str) -> pd.DataFrame:
+    """Derive calendar-fiscal quarter and TTM flows from facts visible at one cutoff.
+
+    The caller supplies filings for comparable consolidated entities in a single currency.
+    Missing prior periods stay missing. Published quarter/TTM facts take precedence.
+    Each derived value names the exact source revisions used in the arithmetic.
+    """
+    selected = asof_records(records, cutoff, mode=mode)
+    bases = {"quarter", "ytd", "ttm"}
+    flows = selected.loc[selected.basis.isin(bases)].copy()
+    result = []
+    for (symbol, metric, unit), group in flows.groupby(["symbol", "metric", "unit"], sort=True):
+        by_period = {(row.period_end, row.basis): row for row in group.itertuples()}
+        for period in sorted(set(group.period_end)):
+            quarter = period.to_period("Q-DEC")
+            if period != quarter.end_time.normalize():
+                raise ValueError(f"Expected calendar-fiscal quarter end: {period}")
+            ytd = (period, "ytd")
+            previous = ((quarter - 1).end_time.normalize(), "ytd")
+            last_year = ((quarter - 4).end_time.normalize(), "ytd")
+            year_end = (pd.Timestamp(period.year - 1, 12, 31), "ytd")
+            for basis in ("quarter", "ttm"):
+                if (period, basis) in by_period:
+                    terms = [((period, basis), 1)]
+                elif basis == "quarter":
+                    terms = [(ytd, 1)] if quarter.quarter == 1 else [(ytd, 1), (previous, -1)]
+                else:
+                    terms = [(ytd, 1)] if quarter.quarter == 4 else [(ytd, 1), (year_end, 1), (last_year, -1)]
+                available = all(key in by_period and pd.notna(by_period[key].value) for key, _ in terms)
+                sources = [
+                    {"period_end": key[0].date().isoformat(), "basis": key[1], "sign": sign,
+                     "source_id": by_period[key].source_id, "revision": by_period[key].revision}
+                    for key, sign in terms if key in by_period
+                ]
+                result.append({"symbol": symbol, "metric": metric, "unit": unit, "period_end": period,
+                               "basis": basis, "value": sum(by_period[k].value * n for k, n in terms) if available else None,
+                               "status": "ok" if available else "missing_period_input", "inputs": sources})
+    return pd.DataFrame(result, columns=["symbol","metric","unit","period_end","basis","value","status","inputs"])

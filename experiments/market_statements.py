@@ -9,7 +9,7 @@ import tempfile
 import duckdb
 import pandas as pd
 
-from factorlab.data.asof import asof_records, validate_fundamentals
+from factorlab.data.asof import asof_records, flow_periods, validate_fundamentals
 from factorlab.data.market_catalog import literal
 from .market_snapshot import write_once
 from .market_version import open_snapshot
@@ -83,6 +83,11 @@ def main():
     view.add_argument("snapshot", type=Path)
     view.add_argument("symbol")
     view.add_argument("cutoff")
+    view.add_argument(
+        "--flows",
+        action="store_true",
+        help="Report quarterly and TTM flow calculations with component revisions",
+    )
     view.add_argument("--mode", choices=("public", "observed"), required=True)
     a = parser.parse_args()
     if a.command == "prepare":
@@ -91,7 +96,8 @@ def main():
         with open_snapshot(a.snapshot) as (db, _, _):
             frame = db.execute("SELECT * FROM statement_facts WHERE symbol=?", [a.symbol]).df()
             if not frame.empty:
-                frame = asof_records(frame, a.cutoff, mode=a.mode)
+                select = flow_periods if a.flows else asof_records
+                frame = select(frame, a.cutoff, mode=a.mode)
             print(frame.to_json(orient="records", date_format="iso", force_ascii=False))
 
 

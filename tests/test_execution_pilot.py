@@ -16,7 +16,7 @@ from experiments.market_research import run
 from experiments.market_statements import read_disclosures
 from experiments.option_capture import CST, collect, observation, quote_audit
 from experiments.scheduled_options import capture_session
-from factorlab.data.asof import asof_records
+from factorlab.data.asof import asof_records, flow_periods
 from test_market_pipeline import sample
 from test_risk_expectations import option_fixture
 
@@ -35,6 +35,29 @@ class ExecutionPilotTests(unittest.TestCase):
         self.assertEqual(cut("2023-04-03T16:00").value.item(), 65375136766.75)
         self.assertEqual(cut("2024-04-08T16:00").value.item(), 65376039957.88)
         self.assertTrue(cut("2024-04-08T16:00", "observed").empty)
+
+    def test_signed_components_and_missing_quarters(self):
+        base = read_disclosures(
+            Path(__file__).resolve().parents[1] / "configs/market-data/pilot-disclosures.json"
+        )
+        base = base.query("symbol=='600519' and metric=='net_profit' and revision==0")
+        versions = pd.concat(
+            [
+                base.assign(period_end=pd.Timestamp(day), value=value)
+                for day, value in [
+                    ("2021-09-30", 30),
+                    ("2021-12-31", 45),
+                    ("2022-06-30", 22),
+                    ("2022-09-30", 40),
+                ]
+            ]
+        )
+        flows = flow_periods(versions, "2023-04-03T16:00:00+08:00", mode="public")
+        current = flows.loc[flows.period_end.eq("2022-09-30")].set_index("basis")
+        self.assertEqual(current.at["quarter", "value"], 18)
+        self.assertEqual(current.at["ttm", "value"], 55)
+        self.assertEqual(len(current.at["ttm", "inputs"]), 3)
+        self.assertTrue(flows.loc[flows.period_end.eq(pd.Timestamp("2021-09-30"))].value.isna().all())
 
     def test_unknown_carried_action_produces_unavailable_receipt(self):
         dates = pd.bdate_range("2024-01-02", periods=140)
