@@ -2,10 +2,13 @@
 import argparse
 import hashlib
 import json
+import os
+import re
 import shutil
 from pathlib import Path
 import subprocess
 import tempfile
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 from .market_snapshot import DEFAULT_MANIFEST, finish_restore, pin_target, read_manifest, restore_file, verified
 
@@ -93,6 +96,53 @@ def publish_increment(source, parent_path, store):
     return marker
 
 
+def pack_run(run_dir, folder):
+    """Archive the run receipt and exactly the output bytes to which it commits."""
+    payload = (run_dir / "run.json").read_bytes()
+    receipt = json.loads(payload)
+    if (not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", receipt["snapshot"])
+            or not re.fullmatch(r"[a-f0-9]{64}", receipt["manifest_sha256"])):
+        raise ValueError("Run is missing its snapshot pin")
+    folder.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=folder) as tmp:
+        path = Path(tmp) / "research.zip"
+        with ZipFile(path, "w") as archive:
+            archive.writestr(ZipInfo("run.json"), payload, compress_type=ZIP_DEFLATED)
+            for name, expected in sorted(receipt["outputs"].items()):
+                if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*\.csv", name):
+                    raise ValueError("Unexpected run filename")
+                info = ZipInfo(name)
+                info.compress_type = ZIP_DEFLATED
+                digest = hashlib.sha256()
+                with (run_dir/name).open("rb") as src, archive.open(info,"w",force_zip64=True) as dest:
+                    while chunk := src.read(1024*1024):
+                        dest.write(chunk)
+                        digest.update(chunk)
+                if digest.hexdigest() != expected:
+                    raise ValueError(f"Changed research output: {name}")
+        with path.open("rb") as src:
+            sha = hashlib.file_digest(src, "sha256").hexdigest()
+        final = folder / f"research-{receipt['snapshot']}-{sha}.zip"
+        try:
+            os.link(path,final)
+        except FileExistsError:
+            if not verified(final, {"bytes":path.stat().st_size,"sha256":sha}):
+                raise ValueError(f"Changed existing research archive: {final}")
+        return final
+
+
+def publish_run(run_dir, store):
+    with tempfile.TemporaryDirectory() as tmp:
+        local = pack_run(run_dir,Path(tmp))
+        remote = store.rstrip("/") + "/" + local.name
+        transfer("copyto",local,remote,"--immutable","--checksum")
+        copy = Path(tmp) / "readback.zip"
+        transfer("copyto",remote,copy)
+        if not verified(copy, {"bytes":local.stat().st_size,"sha256":local.stem.rsplit("-",1)[1]}):
+            raise ValueError("Research archive failed remote read-back")
+    return remote
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -109,9 +159,19 @@ def main():
     get.add_argument("target", type=Path)
     get.add_argument("--manifest", type=Path, help="Pinned local manifest for an existing archive")
     get.add_argument("--catalog", action="store_true")
+    pack = commands.add_parser("pack-run", help="Pack a verified research run for file or Drive upload")
+    pack.add_argument("run_dir", type=Path)
+    pack.add_argument("folder", type=Path)
+    send = commands.add_parser("publish-run", help="Archive a run receipt and its checked outputs on the remote")
+    send.add_argument("run_dir", type=Path)
+    send.add_argument("store")
     args = parser.parse_args()
     if args.command == "publish":
         print(publish(args.source, args.manifest, args.store))
+    elif args.command == "pack-run":
+        print(pack_run(args.run_dir,args.folder))
+    elif args.command == "publish-run":
+        print(publish_run(args.run_dir,args.store))
     elif args.command == "publish-increment":
         print(publish_increment(args.source,args.parent_manifest,args.store))
     else:

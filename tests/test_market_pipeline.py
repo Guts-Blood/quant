@@ -15,7 +15,7 @@ import pandas as pd
 
 from experiments.market_research import CONFIG, overlay, run
 from experiments.market_snapshot import manifest_bytes
-from experiments.market_store import restore
+from experiments.market_store import pack_run, restore
 from experiments.option_capture import CST, collect, observation
 from experiments.shortlist_dcf import annotate
 from test_risk_expectations import option_fixture, dcf_fixture
@@ -56,6 +56,27 @@ class UpdateTests(unittest.TestCase):
             self.assertEqual(len(list(root.glob("*.zip"))), 2)
             with self.assertRaisesRegex(ValueError, "different rate"):
                 collect(root, rate=0.03, now=clock, fetch=interrupted)
+
+    def test_pack_run_pins_exact_selected_outputs(self):
+        from zipfile import ZipFile
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "schedule.csv").write_bytes(b"schedule")
+            (root / "unlisted.txt").write_bytes(b"temporary")
+            receipt = {
+                "snapshot": "v1",
+                "manifest_sha256": "0" * 64,
+                "outputs": {"schedule.csv": hashlib.sha256(b"schedule").hexdigest()},
+            }
+            (root / "run.json").write_text(json.dumps(receipt))
+            dest = pack_run(root, root / "archives")
+            self.assertEqual(dest, pack_run(root, root / "archives"))
+            with ZipFile(dest) as z:
+                self.assertEqual(set(z.namelist()), {"run.json", "schedule.csv"})
+            (root / "schedule.csv").write_bytes(b"changed")
+            with self.assertRaisesRegex(ValueError, "Changed research output"):
+                pack_run(root, root / "archives")
 
     def test_split_restore_resumes_and_refuses_changed_version(self):
         import shutil
@@ -112,7 +133,7 @@ def sample(db, dates):
         FROM trading_calendar t,range(501) s(n) WHERE CASE WHEN t.i<130 THEN n<500 ELSE n>0 END""")
     db.execute("CREATE VIEW session_coverage AS SELECT date, true AS usable FROM trading_calendar")
     db.execute("""CREATE TABLE option_observations AS SELECT date,'daily' AS kind,'510500' AS underlying,
-        'ok' AS status,cast(case when i=126 or i>=130 then .30 else .20 end as double) AS iv30,
+        'ok' AS status,cast(case when i=126 or i>=130 then .30 when i=127 then .10 else .20 end as double) AS iv30,
         timezone('Asia/Shanghai',date+TIME '15:05') AS available_at FROM trading_calendar
         WHERE i<>129""")
     db.execute("""INSERT INTO option_observations SELECT date,'intraday','510500','ok',.95,
@@ -137,7 +158,7 @@ class MatchedResearchTests(unittest.TestCase):
             report = run(
                 db,
                 {"snapshot": "synthetic", "files": []},
-                "test",
+                "0" * 64,
                 start=dates[126].date(),
                 end=dates[134].date(),
                 out=root,
@@ -145,6 +166,9 @@ class MatchedResearchTests(unittest.TestCase):
             )
             self.assertEqual(report["status"], "ok")
             self.assertEqual(report["effective_rebalances"], 6)
+            self.assertEqual(report["high_vol_rebalances"], 5)
+            self.assertTrue(flags.iloc[128].high)  # the equality boundary is inclusive
+            self.assertFalse(flags.iloc[127].high)
             self.assertEqual(report["high_vol_rebalances"], int(flags.iloc[125:134].high.sum()))
             candidates = pd.read_csv(root / "candidates.csv", dtype={"symbol": str})
             self.assertTrue((candidates.symbol == "600000").any())

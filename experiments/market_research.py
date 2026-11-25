@@ -4,6 +4,7 @@ import argparse
 from datetime import date
 from importlib.metadata import version
 import json
+import os
 from pathlib import Path
 import tempfile
 
@@ -285,6 +286,11 @@ def main():
     p.add_argument("--start", type=date.fromisoformat, required=True)
     p.add_argument("--end", type=date.fromisoformat, required=True)
     p.add_argument("--out", type=Path, required=True)
+    p.add_argument(
+        "--store",
+        default=os.environ.get("QUANT_RESEARCH_STORE"),
+        help="Archive the receipt and all checked outputs on this rclone remote",
+    )
     a = p.parse_args()
     a.out.parent.mkdir(parents=True, exist_ok=True)
     with (
@@ -305,6 +311,10 @@ def main():
                     raise ValueError(f"Changed run output: {name}")
         else:
             stage.rename(a.out)
+    if a.store:
+        from .market_store import publish_run
+
+        print(publish_run(a.out, a.store))
     print(
         json.dumps(
             {

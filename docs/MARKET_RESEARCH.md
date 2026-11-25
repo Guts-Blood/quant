@@ -19,7 +19,7 @@
 ```bash
 git clone --branch data/portable-market-store https://github.com/Guts-Blood/quant.git
 cd quant
-git switch --detach "$(git log --diff-filter=A -n 1 --format=%H -- configs/market-data/2026-11-25-v1.json)"
+git switch --detach market-research-2026-11-25-v1
 python3.12 -m venv .venv
 . .venv/bin/activate
 python -m pip install -c configs/market-data/requirements.txt -e '.[market]'
@@ -89,6 +89,8 @@ python -m experiments.market_research baseline "$snap" --start 2026-01-05 --end 
 python -m experiments.market_research compare "$snap" --start 2026-01-05 --end 2026-11-19 --out outputs/market-iv-v1
 python -m unittest discover -s tests -p test_market_pipeline.py -v
 ```
+
+在配好 Drive 的机器上，可以把 `--store "$store"` 加在研究命令末尾，或设置 `export QUANT_RESEARCH_STORE="$store"`，每次完成后自动把回执和它指向的全部 CSV 一起归档。归档名包含快照版本和 ZIP 的 SHA-256，上传后回读校验。既有研究可运行 `python -m experiments.market_store publish-run outputs/market-iv-v1 "$store"`，同一研究重复发布得到同一对象。解压即可读取回执、原始候选、调仓日和成交明细。
 
 每个输出目录含 `run.json`、`candidates.csv` 和 `schedule.csv`。回执记录版本及清单 SHA、输入与输出哈希、代码指纹、软件版本、评估窗口、费用和参数。有可执行样本时分别写三套净值、持仓和订单。当前真实版本在上述窗口有效比较日为 0，收益、回撤、平均仓位与换手均为空。已有的 2022 至 2026 年历史研究只能做回放。按 2026-11-25 冻结的新规则，后续留出期才可作为前瞻样本外检验。
 
