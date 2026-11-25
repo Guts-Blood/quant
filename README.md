@@ -17,6 +17,10 @@ python -m venv .venv
 
 ## 目录
 
+点击仓库结构图可放大，查看各模块的职责、数据流向和运行产物。
+
+[![FactorLab 仓库结构与运行流程](docs/architecture.svg)](docs/architecture.svg)
+
 | 路径 | 内容 |
 | --- | --- |
 | `src/factorlab/data/`、`universe.py` | 输入校验、交易日历、历史股票池、财务数据版本和来源 |

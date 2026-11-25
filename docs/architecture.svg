@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1308" viewBox="0 0 1440 1308"
+     role="img" aria-labelledby="title description" xml:lang="zh-CN">
+  <title id="title">FactorLab 仓库结构与运行流程</title>
+  <desc id="description">由同一个命令行入口进入日频研究或窗口回放。日频研究从配置、行情和交易日历得到因子分数，再分别评价预测能力和回测组合。窗口回放处理日线和五分钟窗口行情。两种回测复用撮合引擎。图下方列出使用文档、历史试点和测试的位置。</desc>
+  <defs>
+    <marker id="daily-arrow" viewBox="0 0 10 10" refX="8" refY="5"
+            markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#3869a8"/>
+    </marker>
+    <marker id="window-arrow" viewBox="0 0 10 10" refX="8" refY="5"
+            markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#28766b"/>
+    </marker>
+    <style>
+      text { font-family: "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #172d40; }
+      .title { font-size: 48px; font-weight: 700; fill: #ffffff; }
+      .subtitle { font-size: 23px; fill: #c9d9e8; }
+      .entry { font-size: 21px; fill: #e6f0f8; }
+      .section { font-size: 28px; font-weight: 700; }
+      .daily-section { fill: #224e85; }
+      .window-section { fill: #20655a; }
+      .heading { font-size: 24px; font-weight: 700; }
+      .body { font-size: 20px; fill: #3c5264; }
+      .code { font: 19px "Noto Sans Mono CJK SC", "SFMono-Regular", Consolas, monospace; fill: #284b68; }
+      .entry-code { font: 20px "Noto Sans Mono CJK SC", "SFMono-Regular", Consolas, monospace; fill: #ffffff; }
+      .daily-card { fill: #ffffff; stroke: #ccdaea; }
+      .window-card { fill: #ffffff; stroke: #c8ded9; }
+      .support-card { fill: #ffffff; stroke: #d7dfe6; }
+      .daily-flow { fill: none; stroke: #3869a8; stroke-width: 2.5; marker-end: url(#daily-arrow); }
+      .window-flow { fill: none; stroke: #28766b; stroke-width: 2.5; marker-end: url(#window-arrow); }
+    </style>
+  </defs>
+
+  <rect width="1440" height="1308" fill="#f3f6f9"/>
+  <path d="M 0 0 H 1440 V 208 H 0 Z" fill="#152f46"/>
+  <rect x="56" y="31" width="42" height="5" rx="2.5" fill="#70b5e7"/>
+  <text class="title" x="56" y="90">FactorLab 仓库结构与运行流程</text>
+  <text class="subtitle" x="56" y="130">A 股因子研究 · 从行情输入到因子评价、组合回测和离线报告</text>
+  <rect x="56" y="151" width="1328" height="41" rx="8" fill="#23445f"/>
+  <text class="entry" x="73" y="178">命令行入口</text>
+  <text class="entry-code" x="201" y="178">python -m factorlab</text>
+  <text class="entry" x="439" y="178">→</text>
+  <text class="entry-code" x="478" y="178">src/factorlab/__main__.py</text>
+  <text class="entry" x="778" y="178">→</text>
+  <text class="entry-code" x="815" y="178">cli.py</text>
+  <text class="entry" x="965" y="178">依赖和入口配置</text>
+  <text class="entry-code" x="1139" y="178">pyproject.toml</text>
+
+  <text class="section daily-section" x="56" y="253">日频因子研究</text>
+  <text class="body" x="230" y="253">源码位于 <tspan class="code">src/factorlab/</tspan></text>
+  <text class="section window-section" x="986" y="253">11:00 / 14:00 窗口回放</text>
+
+  <!-- Arrows are drawn in the gaps so they never overlay labels. -->
+  <g aria-hidden="true">
+    <path class="daily-flow" d="M 500 396 V 426"/>
+    <path class="daily-flow" d="M 500 534 V 564"/>
+    <path d="M 500 672 V 690 H 268 M 500 690 H 732" fill="none" stroke="#3869a8" stroke-width="2.5"/>
+    <path class="daily-flow" d="M 268 690 V 716"/>
+    <path class="daily-flow" d="M 732 690 V 716"/>
+    <path class="daily-flow" d="M 268 850 V 889"/>
+    <path class="daily-flow" d="M 732 850 V 889"/>
+    <path class="window-flow" d="M 1185 396 V 426"/>
+    <path class="window-flow" d="M 1185 534 V 564"/>
+    <path class="window-flow" d="M 1185 672 V 716"/>
+    <path class="window-flow" d="M 1185 850 V 889"/>
+    <path class="window-flow" d="M 944 776 H 982" stroke-dasharray="4 4"/>
+  </g>
+
+  <!-- Daily research and parameter scan -->
+  <g>
+    <rect class="daily-card" x="56" y="272" width="888" height="124" rx="12"/>
+    <text class="heading" x="76" y="307">配置与实验编排</text>
+    <text class="code" x="309" y="307">experiments/config.py · runner.py · scan.py</text>
+    <path d="M 495 328 V 377" stroke="#dbe4ec"/>
+    <text class="code" x="76" y="349">run configs/reversal.toml</text>
+    <text class="body" x="76" y="378">按配置运行单次实验</text>
+    <text class="code" x="521" y="349">scan configs/momentum_grid.toml</text>
+    <text class="body" x="521" y="378">复用单次实验，仅比较训练期和验证期</text>
+
+    <rect class="daily-card" x="56" y="430" width="888" height="104" rx="12"/>
+    <text class="heading" x="76" y="465">校验行情与筛选股票池</text>
+    <text class="code" x="351" y="465">data/ · universe.py</text>
+    <text class="body" x="76" y="507">读取行情面板和交易日历，按可用时点校验输入，并筛选历史股票池</text>
+
+    <rect class="daily-card" x="56" y="568" width="888" height="104" rx="12"/>
+    <text class="heading" x="76" y="603">计算与处理因子</text>
+    <text class="code" x="285" y="603">factors/ · transforms.py</text>
+    <text class="body" x="76" y="645">反转、动量、低波动、盈利收益率 · 去极值、标准化、中性化与组合</text>
+
+    <rect class="daily-card" x="56" y="720" width="424" height="130" rx="12"/>
+    <text class="heading" x="76" y="754">因子评价</text>
+    <text class="code" x="76" y="784">labels.py · evaluation/</text>
+    <text class="body" x="76" y="813">生成未来收益标签，计算 Rank IC、</text>
+    <text class="body" x="76" y="838">分组收益及覆盖率</text>
+
+    <rect class="daily-card" x="520" y="720" width="424" height="130" rx="12"/>
+    <text class="heading" x="540" y="754">组合回测</text>
+    <text class="code" x="540" y="784">portfolio.py · backtest/daily.py</text>
+    <text class="body" x="540" y="813">从分数生成目标权重，按收盘信号</text>
+    <text class="body" x="540" y="838">模拟下一交易日开盘成交</text>
+
+    <rect x="56" y="893" width="888" height="122" rx="12" fill="#e6eef8" stroke="#bbd0e8"/>
+    <text class="heading daily-section" x="76" y="929">日频实验产物</text>
+    <text class="code" x="261" y="929">reporting.py → outputs/</text>
+    <text class="body" x="76" y="965">report.html、Rank IC 与净值 PNG、因子分数和委托持仓 CSV</text>
+    <text class="body" x="76" y="993">manifest.json 记录配置、输入指纹和产物</text>
+  </g>
+
+  <!-- Intraday replay and the execution engine shared with daily backtests -->
+  <g>
+    <rect class="window-card" x="986" y="272" width="398" height="124" rx="12"/>
+    <text class="heading" x="1006" y="307">窗口回放入口</text>
+    <text class="code" x="1006" y="337">backtest run</text>
+    <text class="body" x="1006" y="365">日线和五分钟行情 CSV</text>
+    <text class="body" x="1006" y="389">配合内置策略或预先冻结的委托</text>
+
+    <rect class="window-card" x="986" y="430" width="398" height="104" rx="12"/>
+    <text class="heading" x="1006" y="461">读入与校验</text>
+    <text class="code" x="1006" y="491">backtest/data.py · validation.py</text>
+    <text class="body" x="1006" y="519">样例数据见 examples/backtest/</text>
+
+    <rect class="window-card" x="986" y="568" width="398" height="104" rx="12"/>
+    <text class="heading" x="1006" y="599">按盘中窗口回放</text>
+    <text class="code" x="1006" y="629">backtest/window.py</text>
+    <text class="body" x="1006" y="657">按 11:00 和 14:00 批次处理委托</text>
+
+    <rect class="window-card" x="986" y="720" width="398" height="130" rx="12"/>
+    <text class="heading" x="1006" y="754">共享撮合与记账</text>
+    <text class="code" x="1006" y="784">backtest/engine.py</text>
+    <text class="body" x="1006" y="813">两条回测路径共用撮合引擎</text>
+    <text class="body" x="1006" y="838">处理限价、容量、T+1 和交易费用</text>
+
+    <rect x="986" y="893" width="398" height="122" rx="12" fill="#e2f0eb" stroke="#b8d8cd"/>
+    <text class="heading window-section" x="1006" y="929">窗口回放产物</text>
+    <text class="code" x="1006" y="963">outputs/backtests/&lt;id&gt;/result.json</text>
+    <text class="body" x="1006" y="993">成交、拒单、现金、持仓和净值</text>
+  </g>
+
+  <path d="M 56 1045 H 1384" stroke="#cbd7e1"/>
+  <text class="section" x="56" y="1088">阅读与复现</text>
+
+  <g>
+    <rect class="support-card" x="56" y="1108" width="424" height="145" rx="12"/>
+    <text class="heading" x="76" y="1144">指南与约定</text>
+    <text class="code" x="76" y="1175">README.md · AGENTS.md</text>
+    <text class="code" x="76" y="1204">docs/RESEARCH.md · BACKTEST.md</text>
+    <text class="body" x="76" y="1232">运行方法、数据时点和回测规则</text>
+
+    <rect class="support-card" x="506" y="1108" width="424" height="145" rx="12"/>
+    <text class="heading" x="526" y="1144">历史试点</text>
+    <text class="code" x="526" y="1175">experiments/legacy_pilot/</text>
+    <text class="body" x="526" y="1204">历史数据采集、校验、回放和审计</text>
+    <text class="body" x="526" y="1232">复现步骤和实验协议也在该目录</text>
+
+    <rect class="support-card" x="956" y="1108" width="428" height="145" rx="12"/>
+    <text class="heading" x="976" y="1144">测试与离线样本</text>
+    <text class="code" x="976" y="1175">tests/ · tests/fixtures/synthetic/</text>
+    <text class="body" x="976" y="1204">验证因子、数据时点、评价和撮合</text>
+    <text class="body" x="976" y="1232">示例配置使用附带的虚构行情</text>
+  </g>
+  <text class="body" x="56" y="1284">本地目录 <tspan class="code">datasets/</tspan> 存放自备行情，<tspan class="code">outputs/</tspan> 存放生成结果，均由 Git 忽略。</text>
+</svg>
