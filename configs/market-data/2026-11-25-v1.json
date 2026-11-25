@@ -1,0 +1,407 @@
+{
+  "common": {
+    "common_end": "2026-11-19",
+    "common_sessions": 1338,
+    "common_start": "2021-05-17"
+  },
+  "files": [
+    {
+      "added_sessions": 121,
+      "bytes": 71643,
+      "checked_through": "2026-11-19",
+      "collected_at": "2026-11-25T07:01:44.152943+00:00",
+      "coverage": {
+        "date": [
+          "2000-01-04",
+          "2026-11-19"
+        ]
+      },
+      "dataset": "trading_calendar",
+      "drive_parts": [
+        "0ef65f214a5c25b61cb18455293788a357a8c9b2eb85801ccffde74af3bb25a6-calendar.txt"
+      ],
+      "name": "calendar.txt",
+      "parent_manifest_sha256": "47666fd05e916e1aa32d9981e6309deb3aa504c3ca6cc4646f58ea427b6badc7",
+      "parent_snapshot": "2026-11-19",
+      "raw_file": "reference-4106e32d2cbf5124ff5c8cc4c877a2feec219887323956d4b40284b015815636-calendar.txt",
+      "sha256": "0ef65f214a5c25b61cb18455293788a357a8c9b2eb85801ccffde74af3bb25a6",
+      "source": null,
+      "source_id": "https://huggingface.co/datasets/joshuaxql/qlib_data/resolve/ee0fa6b2299cb5e927d2df491888c84f6c9c027a/cn_data.zip#cn_data/calendars/day_future.txt"
+    },
+    {
+      "bytes": 699112,
+      "collected_at": "2026-11-25T07:08:53.468827+00:00",
+      "coverage": {
+        "valid_from": [
+          "2007-01-31",
+          "2026-10-19"
+        ],
+        "valid_to": [
+          "2007-07-30",
+          "2026-11-19"
+        ]
+      },
+      "dataset": "csi500_intervals",
+      "drive_parts": [
+        "34038ebb8ca5f4f711a16ff55e9654cdc0ea3a680c0d1056e17143900d68c67c-csi500.tsv"
+      ],
+      "name": "csi500.tsv",
+      "parent_manifest_sha256": "47666fd05e916e1aa32d9981e6309deb3aa504c3ca6cc4646f58ea427b6badc7",
+      "parent_snapshot": "2026-11-19",
+      "raw_file": "reference-fa41786142293c0651dc00fae60e03d41c652c34936ef96903d5e5bf6e87705d-membership.zip",
+      "reconstruction": {
+        "basis": "published changes, independently checked rosters",
+        "checkpoints": [
+          "2026-01-09",
+          "2026-01-30",
+          "2026-02-27",
+          "2026-03-31",
+          "2026-04-30",
+          "2026-05-29",
+          "2026-06-30",
+          "2026-07-31",
+          "2026-08-31",
+          "2026-09-30",
+          "2026-11-24"
+        ],
+        "official_events": 4,
+        "seed_date": "2026-01-09",
+        "through": "2026-11-19"
+      },
+      "sha256": "34038ebb8ca5f4f711a16ff55e9654cdc0ea3a680c0d1056e17143900d68c67c",
+      "source": null,
+      "source_id": "China Securities Index notices 3006027/3006137/3006261/3006227, SSE delisting notice 2026-124, Qlib/Tushare month ends and CSI 000905 official 2026-11-24 roster"
+    },
+    {
+      "bytes": 126093859,
+      "collected_at": "2026-11-25",
+      "collection_time_basis": "archive date, day precision",
+      "coverage": {
+        "date": [
+          "2021-05-17",
+          "2026-11-19"
+        ]
+      },
+      "dataset": "daily",
+      "drive_parts": [
+        "2026-11-19_daily.parquet.part1",
+        "2026-11-19_daily.parquet.part2"
+      ],
+      "name": "daily.parquet",
+      "sha256": "378659a9c0522f26c4872d4171e4a458b561ca09f29e69d3a55380a4bfd04a3e",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/daily.parquet",
+      "source_id": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/daily.parquet"
+    },
+    {
+      "bytes": 235887,
+      "collected_at": "2026-11-25",
+      "collection_time_basis": "archive date, day precision",
+      "coverage": {
+        "ann_date": [
+          "2021-01-08",
+          "2026-05-16"
+        ],
+        "ex_date": [
+          "2021-01-15",
+          "2026-05-25"
+        ],
+        "record_date": [
+          "2021-01-14",
+          "2026-05-22"
+        ]
+      },
+      "dataset": "dividends",
+      "drive_parts": [
+        "dividends.parquet"
+      ],
+      "name": "dividends.parquet",
+      "sha256": "19122560a1311be4641cce038a9582903d8b6dce906e29e6992a74aeca81f8bb",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/dividends.parquet",
+      "source_id": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/dividends.parquet"
+    },
+    {
+      "bytes": 9603730,
+      "collected_at": "2026-11-25",
+      "collection_time_basis": "archive date, day precision",
+      "coverage": {
+        "pub_date": [
+          "2021-04-07",
+          "2026-05-15"
+        ],
+        "stat_date": [
+          "2021-03-31",
+          "2026-03-31"
+        ]
+      },
+      "dataset": "fundamentals",
+      "drive_parts": [
+        "2026-11-19_fundamentals.parquet"
+      ],
+      "name": "fundamentals.parquet",
+      "sha256": "fb9ed6ec048047278fcf5d4beadd722ded3c945612e354fd5adc7ee17b611e29",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/fundamentals.parquet",
+      "source_id": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/fundamentals.parquet"
+    },
+    {
+      "bytes": 120941,
+      "collected_at": "2026-11-25",
+      "collection_time_basis": "archive date, day precision",
+      "coverage": [
+        "2026-11-25",
+        "2026-11-25"
+      ],
+      "drive_parts": [
+        "observations-20261125.zip"
+      ],
+      "name": "observations-20261125.zip",
+      "sha256": "56fc050900904f499c26b58bb6529ab61a33b79e35644e84a4068645a7e9ad06",
+      "source": null,
+      "source_id": "Drive archived observations-20261125.zip"
+    },
+    {
+      "bytes": 41866,
+      "collected_at": "2026-11-25T07:01:18.667839+00:00",
+      "coverage": [
+        "2026-11-25",
+        "2026-11-25"
+      ],
+      "dataset": "option_chain",
+      "drive_parts": [
+        "80d438457303b2880783023399dccc90056553cff6fefd9c42a622038cf0f748-options-510500-2026-11-25-daily.json"
+      ],
+      "kind": "daily",
+      "name": "options-510500-2026-11-25-daily.json",
+      "sha256": "80d438457303b2880783023399dccc90056553cff6fefd9c42a622038cf0f748",
+      "source": null,
+      "source_id": "sina_510500_options",
+      "wire_file": "wire-510500-2026-11-25-daily-8fe0dda098c063ae9f18a010d99efc7f8381ea3ebf2a958363494224967e0842.zip",
+      "wire_sha256": "8fe0dda098c063ae9f18a010d99efc7f8381ea3ebf2a958363494224967e0842"
+    },
+    {
+      "bytes": 51405,
+      "collected_at": "2026-11-25T06:13:19.289375+00:00",
+      "coverage": [
+        "2026-11-25",
+        "2026-11-25"
+      ],
+      "dataset": "option_chain",
+      "drive_parts": [
+        "c4db95d53d09f7d863b4bf98934e7f955ad0f157d5061ab4de194368d2c41217-options-510500-2026-11-25-intraday.json"
+      ],
+      "kind": "intraday",
+      "name": "options-510500-2026-11-25-intraday.json",
+      "sha256": "c4db95d53d09f7d863b4bf98934e7f955ad0f157d5061ab4de194368d2c41217",
+      "source": null,
+      "source_id": "sina_510500_intraday_archived_20261125",
+      "wire_file": "observations-20261125.zip",
+      "wire_sha256": "56fc050900904f499c26b58bb6529ab61a33b79e35644e84a4068645a7e9ad06"
+    },
+    {
+      "bytes": 47421,
+      "collected_at": "2026-11-25T07:01:44.152943+00:00",
+      "coverage": [
+        "2010-01-04",
+        "2027-09-30"
+      ],
+      "dataset": "reference_raw",
+      "drive_parts": [
+        "4106e32d2cbf5124ff5c8cc4c877a2feec219887323956d4b40284b015815636-reference-4106e32d2cbf5124ff5c8cc4c877a2feec219887323956d4b40284b015815636-calendar.txt"
+      ],
+      "name": "reference-4106e32d2cbf5124ff5c8cc4c877a2feec219887323956d4b40284b015815636-calendar.txt",
+      "sha256": "4106e32d2cbf5124ff5c8cc4c877a2feec219887323956d4b40284b015815636",
+      "source": null,
+      "source_id": "https://huggingface.co/datasets/joshuaxql/qlib_data/resolve/ee0fa6b2299cb5e927d2df491888c84f6c9c027a/cn_data.zip#cn_data/calendars/day_future.txt"
+    },
+    {
+      "bytes": 240794,
+      "collected_at": "2026-11-25T07:08:53.468827+00:00",
+      "coverage": [
+        "2026-01-09",
+        "2026-11-24"
+      ],
+      "dataset": "reference_raw",
+      "drive_parts": [
+        "fa41786142293c0651dc00fae60e03d41c652c34936ef96903d5e5bf6e87705d-reference-fa41786142293c0651dc00fae60e03d41c652c34936ef96903d5e5bf6e87705d-membership.zip"
+      ],
+      "name": "reference-fa41786142293c0651dc00fae60e03d41c652c34936ef96903d5e5bf6e87705d-membership.zip",
+      "sha256": "fa41786142293c0651dc00fae60e03d41c652c34936ef96903d5e5bf6e87705d",
+      "source": null,
+      "source_id": "China Securities Index notices 3006027/3006137/3006261/3006227, SSE delisting notice 2026-124, Qlib/Tushare month ends and CSI 000905 official 2026-11-24 roster"
+    },
+    {
+      "bytes": 2956,
+      "collected_at": "2026-11-25",
+      "collection_time_basis": "archive date, day precision",
+      "coverage": null,
+      "drive_parts": [
+        "source-README.md"
+      ],
+      "name": "source-README.md",
+      "sha256": "2152973cd97d9cd8747cdfd5e85e3953cdb3dbffc47092910f8c7e12fec7a656",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/README.md",
+      "source_id": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/README.md"
+    },
+    {
+      "bytes": 1462,
+      "collected_at": "2026-11-25",
+      "collection_time_basis": "archive date, day precision",
+      "coverage": null,
+      "drive_parts": [
+        "upstream-manifest.json"
+      ],
+      "name": "upstream-manifest.json",
+      "sha256": "d3120f630d0cd340f4a802dc16a7de4da0e0f3f75e0b5256220055c74f926d67",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/manifest.json",
+      "source_id": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/manifest.json"
+    },
+    {
+      "bytes": 157915197,
+      "collected_at": "2026-11-25",
+      "collection_time_basis": "archive date, day precision",
+      "coverage": {
+        "date": [
+          "2021-05-17",
+          "2026-11-19"
+        ]
+      },
+      "dataset": "valuation",
+      "drive_parts": [
+        "2026-11-19_valuation.parquet.part1",
+        "2026-11-19_valuation.parquet.part2"
+      ],
+      "name": "valuation.parquet",
+      "sha256": "a2853530573d8de5529308e40ce7528e093b77656fdf1991acf1721d0fc46b90",
+      "source": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/valuation.parquet",
+      "source_id": "https://huggingface.co/datasets/CryUshio/ashare-market-base/resolve/de48d435bf1366e038f36be839507645e41f0c0c/base/valuation.parquet"
+    },
+    {
+      "bytes": 24262,
+      "collected_at": "2026-11-25T07:01:32.364539+00:00",
+      "coverage": [
+        "2026-11-25",
+        "2026-11-25"
+      ],
+      "dataset": "option_attempt",
+      "drive_parts": [
+        "a6f18f5ac7619f0e431a14da8679451f2a243c7b80e119ff682c051c43b94504-wire-510500-2026-11-25-attempt-a6f18f5ac7619f0e431a14da8679451f2a243c7b80e119ff682c051c43b94504.zip"
+      ],
+      "kind": "attempt",
+      "name": "wire-510500-2026-11-25-attempt-a6f18f5ac7619f0e431a14da8679451f2a243c7b80e119ff682c051c43b94504.zip",
+      "reason": "no usable maturity bracket for 30 days",
+      "sha256": "a6f18f5ac7619f0e431a14da8679451f2a243c7b80e119ff682c051c43b94504",
+      "source": null,
+      "source_id": "sina_510500_options",
+      "status": "unavailable"
+    },
+    {
+      "bytes": 24252,
+      "collected_at": "2026-11-25T07:01:18.667839+00:00",
+      "coverage": [
+        "2026-11-25",
+        "2026-11-25"
+      ],
+      "dataset": "option_wire",
+      "drive_parts": [
+        "8fe0dda098c063ae9f18a010d99efc7f8381ea3ebf2a958363494224967e0842-wire-510500-2026-11-25-daily-8fe0dda098c063ae9f18a010d99efc7f8381ea3ebf2a958363494224967e0842.zip"
+      ],
+      "name": "wire-510500-2026-11-25-daily-8fe0dda098c063ae9f18a010d99efc7f8381ea3ebf2a958363494224967e0842.zip",
+      "sha256": "8fe0dda098c063ae9f18a010d99efc7f8381ea3ebf2a958363494224967e0842",
+      "source": null,
+      "source_id": "sina_510500_options"
+    }
+  ],
+  "parent_manifest_sha256": "47666fd05e916e1aa32d9981e6309deb3aa504c3ca6cc4646f58ea427b6badc7",
+  "parent_snapshot": "2026-11-19",
+  "schema_version": 2,
+  "snapshot": "2026-11-25-v1",
+  "tables": {
+    "csi500_intervals": {
+      "coverage": {
+        "valid_from": [
+          "2007-01-31",
+          "2026-10-19"
+        ],
+        "valid_to": [
+          "2007-07-30",
+          "2026-11-19"
+        ]
+      },
+      "rows": 22552
+    },
+    "daily": {
+      "coverage": {
+        "date": [
+          "2021-05-17",
+          "2026-11-19"
+        ]
+      },
+      "rows": 6539954
+    },
+    "dividends": {
+      "coverage": {
+        "ann_date": [
+          "2021-01-08",
+          "2026-05-16"
+        ],
+        "ex_date": [
+          "2021-01-15",
+          "2026-05-25"
+        ],
+        "record_date": [
+          "2021-01-14",
+          "2026-05-22"
+        ]
+      },
+      "rows": 31131
+    },
+    "fundamentals": {
+      "coverage": {
+        "pub_date": [
+          "2021-04-07",
+          "2026-05-15"
+        ],
+        "stat_date": [
+          "2021-03-31",
+          "2026-03-31"
+        ]
+      },
+      "rows": 101463
+    },
+    "option_observations": {
+      "coverage": {
+        "date": [
+          "2026-11-25",
+          "2026-11-25"
+        ]
+      },
+      "rows": 2
+    },
+    "option_quotes": {
+      "coverage": {
+        "date": [
+          "2026-11-25",
+          "2026-11-25"
+        ]
+      },
+      "rows": 280
+    },
+    "trading_calendar": {
+      "coverage": {
+        "date": [
+          "2000-01-04",
+          "2026-11-19"
+        ]
+      },
+      "rows": 6513
+    },
+    "valuation": {
+      "coverage": {
+        "date": [
+          "2021-05-17",
+          "2026-11-19"
+        ]
+      },
+      "rows": 6539954
+    }
+  }
+}

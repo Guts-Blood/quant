@@ -1,8 +1,10 @@
 """Restore the versioned A-share market snapshot and optionally build DuckDB views."""
 import argparse
 from contextlib import closing
+from datetime import datetime, timezone
 import hashlib
 import json
+import os
 import re
 from pathlib import Path
 import shutil
@@ -91,18 +93,56 @@ def restore_file(spec, target, archive):
         temp.unlink(missing_ok=True)
 
 
-def build_catalog(target):
-    import duckdb
+def manifest_bytes(manifest):
+    return (json.dumps(manifest, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n").encode()
 
-    with closing(duckdb.connect(str(target / "market.duckdb"))) as db:
-        with db:
-            for table in BASE_TABLES:
-                # Store local absolute paths so callers can query from any directory.
-                file = str((target / (table + ".parquet")).resolve()).replace("'", "''")
-                db.execute(f"CREATE OR REPLACE VIEW {table} AS SELECT * FROM read_parquet('{file}')")
-            db.execute("""CREATE OR REPLACE VIEW research_daily AS
-                          SELECT d.*, v.turn, v.pe_ttm, v.pb_mrq, v.ps_ttm, v.is_st
-                          FROM daily d LEFT JOIN valuation v USING (stock_code, date)""")
+
+def write_once(path, payload):
+    """Atomically publish identical bytes across retries and concurrent writers."""
+    with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as f:
+        tmp = Path(f.name)
+        f.write(payload)
+    try:
+        try:
+            os.link(tmp, path)
+        except FileExistsError:
+            if path.read_bytes() != payload:
+                raise ValueError(f"Version conflict: {path}")
+    finally:
+        tmp.unlink()
+
+
+def pin_target(target, digest):
+    write_once(target / ".snapshot-pin", digest.encode())
+
+
+def finish_restore(target, payload, catalog):
+    manifest = json.loads(payload)
+    if catalog:
+        build_catalog(target, manifest, hashlib.sha256(payload).hexdigest())
+    with tempfile.NamedTemporaryFile(dir=target, delete=False) as f:
+        f.write(payload)
+    Path(f.name).replace(target / "manifest.json")
+
+
+def build_catalog(target, manifest=None, digest=None):
+    import duckdb
+    from factorlab.data.market_catalog import install
+
+    if manifest is None:
+        path = target / "manifest.json"
+        if path.is_file():
+            manifest = read_manifest(path)
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        else:
+            manifest = {"files": [{"name": p.name} for p in target.iterdir() if p.is_file()]}
+    with tempfile.TemporaryDirectory(dir=target) as staging:
+        db_path = Path(staging) / "market.duckdb"
+        with closing(duckdb.connect(str(db_path))) as db:
+            install(db, target, manifest["files"])
+            db.execute("CREATE TABLE snapshot_identity AS SELECT ? AS version, ? AS sha256, ? AS root",
+                       [manifest.get("snapshot"), digest, str(target.resolve())])
+        db_path.replace(target / "market.duckdb")
 
 
 def main():
@@ -120,16 +160,33 @@ def main():
     manifest = current_public_manifest() if args.refresh_public else read_manifest(args.manifest)
     target = args.out or ROOT / "datasets/market" / manifest["snapshot"]
     target.mkdir(parents=True, exist_ok=True)
-    files = [f for f in manifest["files"] if f["source"] or not args.public_only]
+    if args.refresh_public:
+        # Preserve when this revision was first retrieved locally, including across interrupted downloads.
+        plan = target / ".acquisition.json"
+        acquired = datetime.now(timezone.utc).isoformat()
+        for spec in manifest["files"]:
+            spec.update(collected_at=acquired, source_id=spec["source"])
+        try:
+            write_once(plan, manifest_bytes(manifest))
+        except ValueError:
+            previous = read_manifest(plan)
+            if (previous["snapshot"] != manifest["snapshot"] or
+                [(f["name"], f["sha256"]) for f in previous["files"]] !=
+                [(f["name"], f["sha256"]) for f in manifest["files"]]):
+                raise
+            manifest = previous
+    files = [f for f in manifest["files"] if f.get("source") or not args.public_only]
+    if args.public_only and len(files) != len(manifest["files"]):
+        manifest = dict(manifest, files=files, snapshot=manifest["snapshot"] + "-public")
+        if not args.out:
+            target = ROOT / "datasets/market" / manifest["snapshot"]
+            target.mkdir(parents=True, exist_ok=True)
+    payload = (manifest_bytes(manifest) if args.refresh_public or args.public_only
+               else args.manifest.read_bytes())
+    pin_target(target, hashlib.sha256(payload).hexdigest())
     for spec in files:
         restore_file(spec, target, args.archive)
-    if args.catalog:
-        build_catalog(target)
-    if args.refresh_public:
-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=target, delete=False) as stream:
-            json.dump(manifest, stream, indent=2)
-            stream.write("\n")
-        Path(stream.name).replace(target / "manifest.json")
+    finish_restore(target, payload, args.catalog)
     print(f"Verified {len(files)} files in {target.resolve()}")
 
 

@@ -1,0 +1,18 @@
+{
+  "protocol_frozen_on": "2026-11-25",
+  "initial_cash": 100000,
+  "max_positions": 10,
+  "retain_rank": 20,
+  "min_history": 61,
+  "liquidity_window": 20,
+  "min_mean_amount": 30000000,
+  "volatility_window": 20,
+  "iv_window": 252,
+  "iv_min_valid": 126,
+  "iv_quantile": 0.8,
+  "high_vol_multiplier": 0.75,
+  "fixed_exposure": 0.95,
+  "signal_time": "16:00",
+  "costs": {"commission_bps": "3", "min_commission": "5", "transfer_bps": "0.1",
+            "sell_tax_bps": "5", "slippage_bps": "5", "participation": "0.01"}
+}

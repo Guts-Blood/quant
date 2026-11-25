@@ -7,15 +7,21 @@ import duckdb
 import pandas as pd
 
 from factorlab.backtest.daily import simulate
+from factorlab.data.market_catalog import preflight
+from .market_version import open_snapshot
 
 
 def check(path):
-    with duckdb.connect(str(path), read_only=True) as db:
-        bars = db.sql("""SELECT date, stock_code AS symbol, open, close, volume, is_st
-                         FROM research_daily WHERE stock_code = '600160'
-                         AND date BETWEEN '2023-12-28' AND '2024-01-05' ORDER BY date""").df()
-        actions = db.execute("""SELECT count(*) FROM dividends WHERE stock_code = '600160'
-                            AND ex_date BETWEEN '2023-12-29' AND '2024-01-05'""").fetchone()[0]
+    manifest = path.parent / "manifest.json"
+    if manifest.exists() and path.name == "market.duckdb":
+        with open_snapshot(path.parent) as (db, version, digest):
+            preflight(db, "2023-12-28", "2024-01-05")
+            bars, actions = read_fixture(db)
+        identity = {"snapshot":version["snapshot"],"manifest_sha256":digest}
+    else:
+        with duckdb.connect(str(path), read_only=True) as db:
+            bars, actions = read_fixture(db)
+        identity = {}
     if actions or bars.is_st.isna().any() or bars.is_st.any() or len(bars) != 6 or (bars.volume <= 0).any():
         raise ValueError("Historical fixture has changed; review corporate actions, dates and trading status")
     previous = bars.close.shift(1)
@@ -33,7 +39,18 @@ def check(path):
         raise ValueError("Expected the fixed entry and exit to fill")
     if orders.filled_shares.tolist() != [100, 100] or result["daily"].iloc[-1].market_value != 0:
         raise ValueError("Unexpected lot size or ending position")
-    return orders[["date", "side", "filled_shares", "fill_price", "fees"]], result["summary"]
+    if [Decimal(str(f)) for f in orders.fees] != [Decimal("5.02"),Decimal("5.84")]:
+        raise ValueError("Fixed two-fill replay must pay exactly CNY 10.86")
+    return orders[["date", "side", "filled_shares", "fill_price", "fees"]], {**result["summary"],**identity}
+
+
+def read_fixture(db):
+    bars = db.sql("""SELECT date, stock_code AS symbol, open, close, volume, is_st
+                     FROM research_daily WHERE stock_code = '600160'
+                     AND date BETWEEN '2023-12-28' AND '2024-01-05' ORDER BY date""").df()
+    actions = db.execute("""SELECT count(*) FROM dividends WHERE stock_code = '600160'
+                        AND ex_date BETWEEN '2023-12-29' AND '2024-01-05'""").fetchone()[0]
+    return bars, actions
 
 
 if __name__ == "__main__":

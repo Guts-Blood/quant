@@ -7,7 +7,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 
-from .market_snapshot import DEFAULT_MANIFEST, build_catalog, read_manifest, restore_file, verified
+from .market_snapshot import DEFAULT_MANIFEST, finish_restore, pin_target, read_manifest, restore_file, verified
 
 
 def transfer(*args):
@@ -49,6 +49,8 @@ def restore(remote, target, pinned, catalog):
                 raise ValueError("Remote path must end in the manifest SHA-256 or use --manifest for a pinned archive")
         manifest = read_manifest(pinned)
         target.mkdir(parents=True, exist_ok=True)
+        payload = pinned.read_bytes()
+        pin_target(target, hashlib.sha256(payload).hexdigest())
         for spec in manifest["files"]:
             if verified(target / spec["name"], spec):
                 continue
@@ -57,9 +59,38 @@ def restore(remote, target, pinned, catalog):
             restore_file(spec, target, archive)
             for part in spec["drive_parts"]:
                 (archive / part).unlink()
-        if catalog:
-            build_catalog(target)
+        finish_restore(target, payload, catalog)
     print(f"Verified {len(manifest['files'])} files in {target.resolve()}")
+
+
+def publish_increment(source, parent_path, store):
+    """Publish immutable additions into an existing split archive, then its exact Git-pinnable manifest."""
+    manifest_path = source / "manifest.json"
+    release, parent = read_manifest(manifest_path), read_manifest(parent_path)
+    if release.get("parent_manifest_sha256") != hashlib.sha256(parent_path.read_bytes()).hexdigest():
+        raise ValueError("Incorrect parent manifest")
+    parent_files = {s["name"]:s for s in parent["files"]}
+    remote = store.rstrip("/")
+    present = set(subprocess.check_output(["rclone","lsf",remote,"--files-only","--max-depth","1"],
+                                          text=True).splitlines())
+    with tempfile.TemporaryDirectory() as tmp:
+        checked = Path(tmp)
+        for s in release["files"]:
+            old = parent_files.get(s["name"])
+            if old and (s["sha256"],s["drive_parts"]) == (old["sha256"],old["drive_parts"]):
+                if not set(s["drive_parts"]) <= present:
+                    raise ValueError(f"Parent data absent on remote: {s['name']}")
+                continue
+            part = s["sha256"] + "-" + s["name"]
+            if s["drive_parts"] != [part] or not verified(source/s["name"],s):
+                raise ValueError(f"Invalid increment: {s['name']}")
+            transfer("copyto",source/s["name"],remote+"/"+part,"--immutable","--checksum")
+            transfer("copyto",remote+"/"+part,checked/part)
+            if not verified(checked/part,s):
+                raise ValueError(f"Remote verification failed: {part}")
+        marker = remote + "/" + release["snapshot"] + "-manifest.json"
+        transfer("copyto",manifest_path,marker,"--immutable","--checksum")
+    return marker
 
 
 def main():
@@ -69,6 +100,10 @@ def main():
     put.add_argument("source", type=Path)
     put.add_argument("store", help="rclone directory, e.g. research:quant")
     put.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    delta = commands.add_parser("publish-increment", help="Add checked partitions to the existing Drive archive")
+    delta.add_argument("source", type=Path)
+    delta.add_argument("store")
+    delta.add_argument("--parent-manifest", type=Path, required=True)
     get = commands.add_parser("restore", help="Restore a release or a pinned, split archive")
     get.add_argument("remote", help="Release directory printed by publish, or existing archive folder")
     get.add_argument("target", type=Path)
@@ -77,6 +112,8 @@ def main():
     args = parser.parse_args()
     if args.command == "publish":
         print(publish(args.source, args.manifest, args.store))
+    elif args.command == "publish-increment":
+        print(publish_increment(args.source,args.parent_manifest,args.store))
     else:
         restore(args.remote, args.target, args.manifest, args.catalog)
 

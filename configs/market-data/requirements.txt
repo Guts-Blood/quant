@@ -1,0 +1,5 @@
+# Versions used for the portable replay and the matched portfolio regression.
+duckdb==2.0.1
+matplotlib==3.10.8
+numpy==2.3.5
+pandas==2.2.3
