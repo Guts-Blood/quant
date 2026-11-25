@@ -166,6 +166,32 @@ def collect(folder, *, rate, now=None, fetch=fetch_options, retry_unavailable=Fa
         return dest
 
 
+def quote_audit(row):
+    """Diagnose each expiry, including the first insufficient wing of an unusable chain."""
+    expiries = []
+    result = local_iv30(row["quotes"], asof=timestamp(row["asof"]), rate=row["rate"],
+                        max_quote_age_seconds=AGE_SECONDS, expiry_audit=expiries)
+    excluded = {q["contract_id"] for q in result["excluded_quotes"]}
+    expected = row.get("expected_contracts")
+    audited = {entry["expiry"] for entry in expiries}
+    for label in sorted({q["expiry"] for q in row["quotes"] if isinstance(q.get("expiry"), str)}):
+        try:
+            expiry = timestamp(label)
+        except (ValueError, TypeError):
+            continue
+        if not any(expiry == timestamp(t) for t in audited):
+            expiries.append({"expiry": label, "accepted_quotes": 0, "positive_bids": 0,
+                             "wing_counts": None, "reason": "all quotes excluded"})
+    return {
+        "expected": expected, "received": len(row["quotes"]),
+        "missing_contracts": expected - len(row["quotes"]) if expected is not None else None,
+        "fresh_positive_two_sided": sum(q["contract_id"] not in excluded and float(q["bid"]) > 0 for q in row["quotes"]),
+        "excluded_by_reason": dict(Counter(q["reason"] for q in result["excluded_quotes"])),
+        "max_accepted_age_seconds": result["max_quote_age_seconds"], "expiries": expiries,
+        "acquisition_error": row.get("acquisition_error"), "status": result["status"], "reason": result.get("reason"),
+    }
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("folder", type=Path)

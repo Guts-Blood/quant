@@ -1,0 +1,235 @@
+[
+  {
+    "symbol": "600519",
+    "period_end": "2022-12-31",
+    "published": "2023-03-31",
+    "ingested_at": "2026-11-25T09:34:27.433782+00:00",
+    "revision": 0,
+    "source": "https://static.cninfo.com.cn/finalpage/2023-03-31/1216281757.PDF",
+    "facts": [
+      [
+        "net_profit",
+        "ytd",
+        "CNY",
+        65375136766.75,
+        "合并利润表，五、净利润，2022 年度"
+      ],
+      [
+        "operating_cash_flow",
+        "ytd",
+        "CNY",
+        36698595830.03,
+        "合并现金流量表，经营活动产生的现金流量净额，2022 年度"
+      ],
+      [
+        "total_assets",
+        "instant",
+        "CNY",
+        254364804995.25,
+        "合并资产负债表，资产总计，2022 年末"
+      ]
+    ]
+  },
+  {
+    "symbol": "600519",
+    "period_end": "2022-12-31",
+    "published": "2024-04-03",
+    "ingested_at": "2026-11-25T09:34:27.433782+00:00",
+    "revision": 1,
+    "source": "https://static.cninfo.com.cn/finalpage/2024-04-03/1219506510.PDF",
+    "facts": [
+      [
+        "net_profit",
+        "ytd",
+        "CNY",
+        65376039957.88,
+        "合并利润表，五、净利润，2022 年度"
+      ],
+      [
+        "operating_cash_flow",
+        "ytd",
+        "CNY",
+        36698595830.03,
+        "合并现金流量表，经营活动产生的现金流量净额，2022 年度"
+      ],
+      [
+        "total_assets",
+        "instant",
+        "CNY",
+        254500826096.02,
+        "合并资产负债表，资产总计，2022 年末"
+      ]
+    ]
+  },
+  {
+    "symbol": "600820",
+    "period_end": "2023-09-30",
+    "published": "2023-10-28",
+    "revision": 0,
+    "ingested_at": "2026-11-25T09:36:28.052418+00:00",
+    "source": "https://static.cninfo.com.cn/finalpage/2023-10-28/1218181863.PDF",
+    "facts": [
+      [
+        "total_assets",
+        "instant",
+        "CNY",
+        153630752333.24,
+        "资产总计"
+      ],
+      [
+        "cash_equivalents",
+        "instant",
+        "CNY",
+        19235194252.68,
+        "期末现金及现金等价物余额"
+      ],
+      [
+        "shares",
+        "instant",
+        "shares",
+        3144096094,
+        "普通股股数，股本，每股面值1元"
+      ],
+      [
+        "short_borrowings",
+        "instant",
+        "CNY",
+        6716024580.89,
+        "短期借款"
+      ],
+      [
+        "current_long_debt",
+        "instant",
+        "CNY",
+        2397393300.9,
+        "一年内到期的非流动负债"
+      ],
+      [
+        "long_borrowings",
+        "instant",
+        "CNY",
+        22786541141.54,
+        "长期借款"
+      ],
+      [
+        "bonds",
+        "instant",
+        "CNY",
+        5038088368.13,
+        "应付债券"
+      ],
+      [
+        "leases",
+        "instant",
+        "CNY",
+        235656089.54,
+        "租赁负债"
+      ],
+      [
+        "minority_interests",
+        "instant",
+        "CNY",
+        6679390652.06,
+        "少数股东权益"
+      ],
+      [
+        "equity_method_investments",
+        "instant",
+        "CNY",
+        6701290432.03,
+        "长期股权投资"
+      ],
+      [
+        "other_equity_investments",
+        "instant",
+        "CNY",
+        257477258.57,
+        "其他权益工具投资"
+      ],
+      [
+        "other_financial_assets",
+        "instant",
+        "CNY",
+        260387668.33,
+        "其他非流动金融资产"
+      ],
+      [
+        "debt_investments",
+        "instant",
+        "CNY",
+        1184528.52,
+        "债权投资"
+      ],
+      [
+        "revenue",
+        "ytd",
+        "CNY",
+        46906944458.2,
+        "营业收入"
+      ],
+      [
+        "operating_profit",
+        "ytd",
+        "CNY",
+        2084645604.0,
+        "营业利润"
+      ],
+      [
+        "net_profit",
+        "ytd",
+        "CNY",
+        1599060737.8,
+        "净利润"
+      ],
+      [
+        "operating_cash_flow",
+        "ytd",
+        "CNY",
+        367538149.88,
+        "经营活动产生的现金流量净额"
+      ],
+      [
+        "cost_of_sales",
+        "ytd",
+        "CNY",
+        41339732402.24,
+        "营业成本"
+      ],
+      [
+        "business_taxes",
+        "ytd",
+        "CNY",
+        138775997.32,
+        "税金及附加"
+      ],
+      [
+        "selling",
+        "ytd",
+        "CNY",
+        5643525.02,
+        "销售费用"
+      ],
+      [
+        "administration",
+        "ytd",
+        "CNY",
+        1397312045.4,
+        "管理费用"
+      ],
+      [
+        "rd",
+        "ytd",
+        "CNY",
+        1828981102.44,
+        "研发费用"
+      ],
+      [
+        "revenue",
+        "quarter",
+        "CNY",
+        19337829458.65,
+        "主要会计数据，营业收入，本报告期"
+      ]
+    ]
+  }
+]

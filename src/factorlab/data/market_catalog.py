@@ -97,6 +97,12 @@ def install(db, root, files):
                           try_cast(? AS DOUBLE),try_cast(? AS BOOLEAN))""",
                 rows,
             )
+    if "benchmark.parquet" in names:
+        db.execute(f"CREATE VIEW benchmark AS SELECT * FROM read_parquet({literal(root / 'benchmark.parquet')})")
+    if "statement_facts.parquet" in names:
+        db.execute(f"CREATE VIEW statement_facts AS SELECT * FROM read_parquet({literal(root / 'statement_facts.parquet')})")
+        from .asof import validate_fundamentals
+        validate_fundamentals(db.table("statement_facts").df())
     if "execution.parquet" in names:
         db.execute(
             f"CREATE VIEW execution AS SELECT * FROM read_parquet({literal(root / 'execution.parquet')})"
@@ -126,6 +132,10 @@ def inventory(db):
     }
     if ("execution",) in db.execute("SHOW TABLES").fetchall():
         clocks["execution"] = ("date",)
+    if ("statement_facts",) in db.execute("SHOW TABLES").fetchall():
+        clocks["statement_facts"] = ("period_end", "published_at", "available_at")
+    if ("benchmark",) in db.execute("SHOW TABLES").fetchall():
+        clocks["benchmark"] = ("date",)
     result = {}
     for table, fields in clocks.items():
         periods = {}

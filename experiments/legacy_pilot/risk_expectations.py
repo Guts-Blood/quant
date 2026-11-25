@@ -33,7 +33,7 @@ def _time(value):
     return result
 
 
-def _variance_strip(rows, asof, rate, min_side_strikes):
+def _variance_strip(rows, asof, rate, min_side_strikes, diagnostics=None):
     """Discrete option-strip variance with two-consecutive-zero-bid wing cutoff."""
     pairs = defaultdict(dict)
     for row in rows:
@@ -79,6 +79,9 @@ def _variance_strip(rows, asof, rate, min_side_strikes):
             selected.append((strike, quote["mid"]))
             count += 1
         counts[kind] = count
+    if diagnostics is not None:
+        diagnostics.update(k0=k0, forward=forward, wing_counts=counts)
+    for kind, count in counts.items():
         if count < min_side_strikes:
             raise ValueError(f"insufficient {kind} wing strikes")
     selected.sort()
@@ -101,7 +104,7 @@ def _variance_strip(rows, asof, rate, min_side_strikes):
 
 
 def local_iv30(quotes, *, asof, rate, max_quote_age_seconds=300,
-               max_relative_spread=0.5, min_side_strikes=3):
+               max_relative_spread=0.5, min_side_strikes=3, expiry_audit=None):
     """Compute 30-calendar-day IV from one underlying's synchronized option chain.
 
     Each quote requires contract_id, underlying, kind, strike, bid, ask, expiry,
@@ -157,10 +160,15 @@ def local_iv30(quotes, *, asof, rate, max_quote_age_seconds=300,
               "max_quote_age_seconds": max(ages, default=None), "excluded_expiries": []}
     terms = []
     for expiry, rows in sorted(groups.items()):
+        diagnostic = {"expiry": expiry.isoformat(), "accepted_quotes": len(rows),
+                      "positive_bids": sum(r["bid"] > 0 for r in rows), "wing_counts": None}
         try:
-            terms.append(_variance_strip(rows, asof, rate, min_side_strikes))
+            terms.append(_variance_strip(rows, asof, rate, min_side_strikes, diagnostic))
         except ValueError as exc:
+            diagnostic["reason"] = str(exc)
             output["excluded_expiries"].append({"expiry": expiry.isoformat(), "reason": str(exc)})
+        if expiry_audit is not None:
+            expiry_audit.append(diagnostic)
     target = 30 / 365
     lower = [term for term in terms if term["years"] <= target]
     upper = [term for term in terms if term["years"] >= target]

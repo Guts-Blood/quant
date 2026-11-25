@@ -12,10 +12,11 @@ import numpy as np
 import pandas as pd
 
 from factorlab.artifacts import write_json
-from factorlab.backtest.daily import simulate
+from factorlab.backtest.daily import HeldSecurityDataError, simulate
 from factorlab.data.market_catalog import preflight
 from factorlab.experiments.runner import code_identity, environment, save_table
 from factorlab.factors import earnings_yield, low_volatility
+from .market_reconciliation import reconcile
 from .market_version import checksum, open_snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -203,7 +204,7 @@ def run(db, manifest, digest, *, start, end, out, mode):
     if has_execution and candidates.empty:
         reasons.append("no_eligible_stock_shortlists")
     save_table(out, "candidates.csv", candidates)
-    save_table(out, "schedule.csv", schedule)
+    successful = {}
     if not effective.empty:
         selected = candidates.loc[candidates.trade_date.isin(effective.trade_date)].copy()
         market = execution_bars(db, set(selected.symbol), selected.signal_date.min(), trade_days[-1])
@@ -219,32 +220,55 @@ def run(db, manifest, digest, *, start, end, out, mode):
                 weight=selected.base_weight.where(selected.member_on_trade_date, 0.0) * multiplier,
                 signal_valid=True,
             )
-            result = simulate(
-                market,
-                targets,
-                calendar=calendar,
-                start=effective.trade_date.iloc[0],
-                end=end,
-                initial_cash=cfg["initial_cash"],
-                costs=cfg["costs"],
-                max_positions=cfg["max_positions"],
-                signal_time=cfg["signal_time"],
-                missing_signal="hold",
-            )
-            daily, stats = result["daily"], result["summary"]
-            metrics[name] = {
-                **stats,
-                "mean_actual_exposure": float((daily.market_value / daily.nav).mean()),
-                "half_gross_turnover": float(daily.half_gross_turnover.sum()),
-            }
-            for table in ("orders", "daily", "holdings", "events"):
-                save_table(out, f"{name}-{table}.csv", result[table])
+            try:
+                result = simulate(
+                    market,
+                    targets,
+                    calendar=calendar,
+                    start=effective.trade_date.iloc[0],
+                    end=end,
+                    initial_cash=cfg["initial_cash"],
+                    costs=cfg["costs"],
+                    max_positions=cfg["max_positions"],
+                    signal_time=cfg["signal_time"],
+                    missing_signal="hold",
+                )
+            except HeldSecurityDataError as exc:
+                reasons.append(str(exc))
+                successful.clear()
+                schedule["effective"] = False
+                schedule["triggered"] = False
+                effective = schedule.loc[schedule.effective]
+                break
+            result["reconciliation"] = reconcile(result, market, cfg["initial_cash"])
+            successful[name] = result
+    for name, result in successful.items():
+        daily, stats = result["daily"], result["summary"]
+        metrics[name] = {
+            **stats,
+            "mean_actual_exposure": float((daily.market_value / daily.nav).mean()),
+            "half_gross_turnover": float(daily.half_gross_turnover.sum()),
+        }
+        for table in ("orders", "daily", "holdings", "events", "reconciliation"):
+            save_table(out, f"{name}-{table}.csv", result[table])
+        if {"industry", "market_cap"} <= set(db.table("valuation").columns) and not result["holdings"].empty:
+            db.register("held_rows", result["holdings"])
+            exposure = db.sql("""SELECT h.date,h.symbol,h.market_value,v.industry,v.market_cap
+                FROM held_rows h LEFT JOIN valuation v ON h.date=v.date AND h.symbol=v.stock_code
+                ORDER BY h.date,h.symbol""").df()
+            exposure["nav_weight"] = exposure.market_value.astype(float) / exposure.date.map(daily.set_index("date").nav)
+            save_table(out, f"{name}-exposures.csv", exposure)
+    if ("benchmark",) in db.execute("SHOW TABLES").fetchall():
+        levels = db.execute("SELECT * FROM benchmark WHERE date BETWEEN ? AND ? ORDER BY date", [start, end]).df()
+        save_table(out, "benchmark.csv", levels)
+    save_table(out, "schedule.csv", schedule)
     source = code_identity()
     source["experiment_files"] = {
         p: checksum(ROOT / p)
         for p in (
             "experiments/market_research.py",
             "experiments/market_version.py",
+            "experiments/market_reconciliation.py",
             "experiments/option_capture.py",
             "experiments/legacy_pilot/risk_expectations.py",
         )

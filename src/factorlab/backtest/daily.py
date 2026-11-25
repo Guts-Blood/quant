@@ -24,6 +24,10 @@ DEFAULT_COSTS = {"commission_bps": "3", "min_commission": "5",
                  "slippage_bps": "5", "participation": "0.01"}
 
 
+class HeldSecurityDataError(ValueError):
+    """The portfolio cannot be valued reliably on this session."""
+
+
 def _decimal(value, name, *, positive=False):
     try:
         result = D(str(value))
@@ -174,10 +178,10 @@ def simulate(panel, targets, *, calendar, start=None, end=None, initial_cash=100
         for code, shares in list(book.holdings.items()):
             current = market.get((day, code))
             if current is None:
-                raise ValueError(f"missing held-security observation: {day.date()} {code}")
+                raise HeldSecurityDataError(f"missing held-security observation: {day.date()} {code}")
             info = current[0]
             if info.action in {"unknown", "ex"}:
-                raise ValueError(f"unsupported held-security corporate action: {day.date()} {code}")
+                raise HeldSecurityDataError(f"unsupported held-security corporate action: {day.date()} {code}")
             if info.action == "cash":
                 book.receivables[info.pay_date] += money(shares * info.cash_per_share)
         for pay_date in list(book.receivables):
@@ -207,7 +211,7 @@ def simulate(panel, targets, *, calendar, start=None, end=None, initial_cash=100
         for code, shares in sorted(book.holdings.items()):
             current = market.get((day, code))
             if current is None:
-                raise ValueError(f"missing closing mark: {day.date()} {code}")
+                raise HeldSecurityDataError(f"missing closing mark: {day.date()} {code}")
             value = shares * current[0].close
             market_value += value
             holding_rows.append({"date": day, "symbol": code, "shares": shares,

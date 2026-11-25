@@ -62,7 +62,7 @@ def annotate(run_dir, inputs, output):
         notes.append(
             dict(
                 item,
-                status=implied["status"],
+                status="multiple_roots" if len(implied["roots"]) > 1 else implied["status"],
                 inputs=entry,
                 operating_ev_bridge=bridge,
                 implied_growth_roots=implied["roots"],
@@ -76,6 +76,12 @@ def annotate(run_dir, inputs, output):
         "inputs_sha256": checksum(inputs),
         "run_sha256": checksum(run_dir / "run.json"),
         "method_sha256": checksum(Path(__file__)),
+        "coverage": {
+            "candidate_rows": len(notes), "with_inputs": len(entries),
+            "candidate_symbols": len({r["symbol"] for r in rows}),
+            "symbols_with_inputs": len({symbol for _, symbol in entries}),
+            "fraction_with_inputs": len(entries) / len(notes) if notes else None,
+        },
         "notes": notes,
     }
     payload = encode(value)

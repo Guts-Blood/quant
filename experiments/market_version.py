@@ -15,13 +15,15 @@ import duckdb
 
 from factorlab.data.market_catalog import BASE_TABLES, install, inventory, preflight
 from .market_snapshot import build_catalog, manifest_bytes, pin_target, read_manifest, verified, write_once
-from .option_capture import encode, observation, timestamp
+from .option_capture import encode, observation, quote_audit, timestamp
 
 TABLE_FILES = {
     **{k + ".parquet": k for k in BASE_TABLES},
     "csi500.tsv": "csi500_intervals",
     "calendar.txt": "trading_calendar",
     "execution.parquet": "execution",
+    "benchmark.parquet": "benchmark",
+    "statement_facts.parquet": "statement_facts",
 }
 
 
@@ -95,13 +97,18 @@ def compose(base, dest, *, captures=(), replacements=None):
         raise ValueError("Provide a distinct named output version")
     parent_path = base / "manifest.json"
     parent = read_manifest(parent_path)
-    verify_files(base, parent)
+    # Only inherited bytes are dependencies. Fully replaced tables may live in cold storage.
+    changes = read_manifest(replacements)["files"] if replacements else []
+    old_hashes = {item["name"]: item["sha256"] for item in parent["files"]}
+    replaced = {item["name"] for item in changes if item["sha256"] != old_hashes.get(item["name"])}
+    inherited = [item for item in parent["files"] if item["name"] not in replaced]
+    verify_files(base, {"files": inherited})
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".market-update-", dir=dest.parent) as temp:
         stage = Path(temp) / "release"
         stage.mkdir()
         specs = {}
-        for old in parent["files"]:
+        for old in inherited:
             name = old["name"]
             # The original release preserves only its archival day, not historical ingestion clocks.
             acquired = old.get("collected_at") or parent.get("archived_on")
@@ -117,9 +124,8 @@ def compose(base, dest, *, captures=(), replacements=None):
             specs[name] = spec
             link_or_copy(base / name, stage / name)
 
-        if replacements:
-            changes = read_manifest(replacements)
-            for item in changes["files"]:
+        if changes:
+            for item in changes:
                 name = item["name"]
                 reference_raw = item.get("dataset") == "reference_raw" and name.startswith(
                     "reference-" + item["sha256"] + "-"
@@ -256,6 +262,7 @@ def audit_options(folder, manifest):
                 "available_at": row["available_at"],
                 "received": row["quality"]["received"],
                 "expected": row["quality"]["expected"],
+                "quote_audit": quote_audit(row),
                 "two_sided_fields": row["quality"]["with_bid_and_ask"],
                 "fresh_accepted_two_sided": fresh_two_sided,
                 "excluded": len(result["excluded_quotes"]),

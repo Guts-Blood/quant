@@ -1,0 +1,20 @@
+{
+  "symbol": "600820",
+  "signal_date": "2023-12-08",
+  "period_end": "2023-09-30",
+  "valuation_basis": "Historical sensitivity case prepared after the signal. Annualize consolidated nine-month revenue by 4/3 under the same consolidation scope. Construction is seasonal.",
+  "debt_fields": ["short_borrowings", "current_long_debt", "long_borrowings", "bonds", "leases"],
+  "nonoperating_fields": ["equity_method_investments", "other_equity_investments", "other_financial_assets", "debt_investments"],
+  "bridge_basis": "Book-value proxy for separately reported financial investments and associates; keep project receivables and investment property in operations. Deduct cash equivalents. Debt uses separately identified financing lines, including current maturities.",
+  "core_expenses": ["cost_of_sales", "business_taxes", "selling", "administration", "rd"],
+  "margin_basis": "Hold the reported nine-month core operating margin before finance costs, investment income, other gains and impairments constant for all five forecast years and perpetuity.",
+  "years": 5,
+  "tax_rate": 0.25,
+  "sales_to_capital": 1.0,
+  "discount_rate": 0.09,
+  "terminal_growth": 0.02,
+  "terminal_roic": 0.08,
+  "attainable_growth": 0.03,
+  "stress_growth": -0.03,
+  "assumption_basis": "Illustrative nominal CNY sensitivity: standard 25% enterprise income tax, one yuan of reinvestment per yuan of additional revenue, 9% required return and 8% terminal ROIC. Long-run 2% growth and symmetric +3%/-3% explicit scenarios are research assumptions."
+}

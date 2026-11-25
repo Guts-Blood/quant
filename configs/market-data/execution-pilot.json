@@ -1,0 +1,45 @@
+{
+  "start": "2023-09-07",
+  "end": "2024-01-05",
+  "first_trade": "2023-12-11",
+  "parent": "2026-11-25-v1",
+  "quotes": {
+    "repo": "yangyangzhao0211/ashare-daily",
+    "commit": "c693ae7e91e4944b82117161e0590229568ed6c7"
+  },
+  "stock_files": {
+    "repo": "codelyc/stock_data",
+    "commit": "efa43d7096955f0e67f4f526c2f654ff33088b7c"
+  },
+  "membership": {
+    "effective": "2023-12-11",
+    "before": "2023-12-08",
+    "after": "2023-12-29",
+    "replacements": 50,
+    "notice": "https://www.cnfin.com/gs-lb/detail/20231124/3970957_1.html"
+  },
+  "cash_notices": [
+    {
+      "stock_code": "002444",
+      "ex_date": "2023-12-07",
+      "pay_date": "2023-12-07",
+      "cash_per_share": 0.175,
+      "notice": "巨星科技 2023-055",
+      "source": "https://epaper.cs.com.cn/zgzqb/wap/html/2023-12/01/nw.D110000zgzqb_20231201_4-B034.htm"
+    },
+    {
+      "stock_code": "688289",
+      "ex_date": "2023-12-11",
+      "pay_date": "2023-12-11",
+      "cash_per_share": 0.2622,
+      "notice": "圣湘生物 2023-082",
+      "source": "https://qxb-pdf-osscache.qixin.com/AnBaseinfo/65db3ab2c6740002b764ae3f19bed86f.pdf"
+    }
+  ],
+  "benchmark": {
+    "repo": "oliverran/a-stock-history",
+    "commit": "647adb38458521ba98adfa89e578bc9264a9cef2",
+    "path": "public/api/cn/broad/csi500-total-return.json",
+    "code": "H00905"
+  }
+}
